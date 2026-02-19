@@ -1,3 +1,5 @@
+"use client";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "@/types";
@@ -7,31 +9,37 @@ interface AuthState {
   token: string | null;
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
-  isAuthenticated: () => boolean;
+  isAuthenticated: boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       token: null,
+      isAuthenticated: false,
 
       setAuth: (user, token) => {
-        localStorage.setItem("token", token);
-        set({ user, token });
+        if (typeof window !== "undefined") {
+          localStorage.setItem("token", token);
+        }
+        set({ user, token, isAuthenticated: true });
       },
 
       clearAuth: () => {
-        localStorage.removeItem("token");
-        set({ user: null, token: null });
-      },
-
-      isAuthenticated: () => {
-        return !!get().token;
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("token");
+        }
+        set({ user: null, token: null, isAuthenticated: false });
       },
     }),
     {
       name: "auth-storage",
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+      }),
     },
   ),
 );
