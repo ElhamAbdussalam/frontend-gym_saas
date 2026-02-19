@@ -1,21 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import api from "@/lib/api";
+import { useAuthStore } from "@/store/authStore";
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
+  const router = useRouter();
+  const { setAuth } = useAuthStore();
+  const [form, setForm] = useState({
     gym_name: "",
     name: "",
     email: "",
@@ -24,131 +18,123 @@ export default function RegisterPage() {
     phone: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const { register } = useAuth();
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-
+    setErrors({});
     try {
-      await register(formData);
+      const res = await api.post("/register", form);
+      setAuth(res.data.user, res.data.access_token);
+      router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message);
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+  const fields = [
+    {
+      name: "gym_name",
+      label: "Gym Name",
+      placeholder: "FitLife Gym",
+      type: "text",
+    },
+    { name: "name", label: "Your Name", placeholder: "John Doe", type: "text" },
+    {
+      name: "email",
+      label: "Email",
+      placeholder: "john@gym.com",
+      type: "email",
+    },
+    {
+      name: "phone",
+      label: "Phone (Optional)",
+      placeholder: "+628123456789",
+      type: "text",
+    },
+    {
+      name: "password",
+      label: "Password",
+      placeholder: "••••••••",
+      type: "password",
+    },
+    {
+      name: "password_confirmation",
+      label: "Confirm Password",
+      placeholder: "••••••••",
+      type: "password",
+    },
+  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Create Your Gym Account</CardTitle>
-          <CardDescription>Start your 14-day free trial today</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
-                {error}
-              </div>
-            )}
+      <div className="bg-white rounded-xl shadow-md p-8 w-full max-w-md">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold">🏋️ GymFlow</h1>
+          <h2 className="text-xl font-semibold mt-2">
+            Create Your Gym Account
+          </h2>
+          <p className="text-gray-500 text-sm">
+            Start your 14-day free trial today
+          </p>
+        </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="gym_name">Gym Name</Label>
-              <Input
-                id="gym_name"
-                name="gym_name"
-                placeholder="FitLife Gym"
-                value={formData.gym_name}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {fields.map(({ name, label, placeholder, type }) => (
+            <div key={name}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {label}
+              </label>
+              <input
+                name={name}
+                type={type}
+                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors[name] ? "border-red-400" : "border-gray-300"
+                }`}
+                placeholder={placeholder}
+                value={form[name as keyof typeof form]}
                 onChange={handleChange}
-                required
+                required={name !== "phone"}
+                minLength={name === "password" ? 8 : undefined}
               />
+              {errors[name] && (
+                <p className="text-red-500 text-xs mt-1">{errors[name][0]}</p>
+              )}
             </div>
+          ))}
 
-            <div className="space-y-2">
-              <Label htmlFor="name">Your Name</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="John Doe"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loading ? "⏳ Creating account..." : "🚀 Start Free Trial"}
+          </button>
+        </form>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="john@gym.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link
+            href="/auth/login"
+            className="text-blue-600 hover:underline font-medium"
+          >
+            Login here
+          </Link>
+        </p>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone (Optional)</Label>
-              <Input
-                id="phone"
-                name="phone"
-                placeholder="+628123456789"
-                value={formData.phone}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength={8}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password_confirmation">Confirm Password</Label>
-              <Input
-                id="password_confirmation"
-                name="password_confirmation"
-                type="password"
-                value={formData.password_confirmation}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating account..." : "Start Free Trial"}
-            </Button>
-          </form>
-
-          <div className="mt-4 text-center text-sm">
-            Already have an account?{" "}
-            <Link href="/auth/login" className="text-blue-600 hover:underline">
-              Login here
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+        <p className="mt-2 text-center text-xs text-gray-400">
+          No credit card required • 14-day free trial
+        </p>
+      </div>
     </div>
   );
 }
