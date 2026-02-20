@@ -43,8 +43,18 @@ export default function LoginPage() {
         localStorage.getItem("token"),
       );
 
-      console.log("🚀 Redirecting to dashboard...");
-      router.push("/dashboard");
+      console.log("🚀 Attempting redirect to dashboard...");
+
+      // Try Next.js router first
+      try {
+        await router.push("/dashboard");
+        console.log("✅ Router.push executed");
+      } catch (routerError) {
+        console.error("❌ Router.push failed:", routerError);
+        // Fallback to window.location
+        console.log("🔄 Falling back to window.location.href");
+        window.location.href = "/dashboard";
+      }
     } catch (err: any) {
       console.error("❌ Login error:", err);
       console.error("📋 Error details:", {
