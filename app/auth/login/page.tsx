@@ -15,19 +15,50 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔐 Login attempt started");
+    console.log("📧 Form data:", { email: form.email, password: "***" });
+
     setLoading(true);
     setError("");
+
     try {
+      console.log(
+        "📡 Sending login request to:",
+        `${process.env.NEXT_PUBLIC_API_URL}/login`,
+      );
       const res = await api.post("/login", form);
+
+      console.log("✅ Login response received:", {
+        status: res.status,
+        hasUser: !!res.data.user,
+        hasToken: !!res.data.access_token,
+        user: res.data.user,
+      });
+
       setAuth(res.data.user, res.data.access_token);
+      console.log("💾 Auth data saved to store");
+
+      console.log(
+        "🔑 Token saved to localStorage:",
+        localStorage.getItem("token"),
+      );
+
+      console.log("🚀 Redirecting to dashboard...");
       router.push("/dashboard");
     } catch (err: any) {
+      console.error("❌ Login error:", err);
+      console.error("📋 Error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
       setError(
         err.response?.data?.message ||
           "Login failed. Please check your credentials.",
       );
     } finally {
       setLoading(false);
+      console.log("🏁 Login process completed");
     }
   };
 
