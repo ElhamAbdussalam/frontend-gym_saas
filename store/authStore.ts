@@ -20,17 +20,31 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       setAuth: (user, token) => {
+        console.log("🔐 AuthStore: setAuth called");
+        console.log("👤 User:", user);
+        console.log("🎫 Token:", token?.substring(0, 20) + "...");
+
         if (typeof window !== "undefined") {
           localStorage.setItem("token", token);
+          console.log("💾 Token saved to localStorage");
         }
+
         set({ user, token, isAuthenticated: true });
+        console.log("✅ AuthStore: State updated", {
+          hasUser: !!user,
+          hasToken: !!token,
+          isAuthenticated: true,
+        });
       },
 
       clearAuth: () => {
+        console.log("🚪 AuthStore: clearAuth called");
         if (typeof window !== "undefined") {
           localStorage.removeItem("token");
+          console.log("🗑️ Token removed from localStorage");
         }
         set({ user: null, token: null, isAuthenticated: false });
+        console.log("✅ AuthStore: State cleared");
       },
     }),
     {
