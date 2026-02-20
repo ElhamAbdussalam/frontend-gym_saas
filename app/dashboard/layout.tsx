@@ -30,20 +30,50 @@ export default function DashboardLayout({
   const { user, token, clearAuth } = useAuthStore();
 
   useEffect(() => {
-    if (!token) {
-      router.push("/auth/login");
-    }
-  }, [token, router]);
+    console.log("🔐 Dashboard Layout: Auth check");
+    console.log("📊 Auth state:", { hasUser: !!user, hasToken: !!token });
+
+    const checkAuth = () => {
+      const localToken = localStorage.getItem("token");
+      console.log("🔑 localStorage token:", localToken ? "exists" : "missing");
+
+      if (!token && !localToken) {
+        console.log("❌ No authentication found, redirecting to login");
+        router.push("/auth/login");
+        return false;
+      }
+
+      console.log("✅ Authentication verified");
+      return true;
+    };
+
+    checkAuth();
+  }, [token, user, router]);
 
   const handleLogout = async () => {
+    console.log("🚪 Logout initiated");
     try {
       await api.post("/logout");
-    } catch {}
+      console.log("✅ Logout API call successful");
+    } catch (err) {
+      console.log("⚠️ Logout API call failed (continuing anyway)");
+    }
     clearAuth();
+    console.log("🔄 Redirecting to login");
     router.push("/auth/login");
   };
 
-  if (!token) return null;
+  // Show loading or nothing while checking auth
+  if (!token && !localStorage.getItem("token")) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-2">🔄</div>
+          <p className="text-gray-500">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
