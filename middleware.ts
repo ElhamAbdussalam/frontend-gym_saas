@@ -8,7 +8,6 @@ export function middleware(request: NextRequest) {
   console.log("🔍 Middleware:", {
     pathname,
     method: request.method,
-    hasAuthCookie: request.cookies.has("auth-storage"),
   });
 
   // Redirect /login to /auth/login
@@ -23,22 +22,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/auth/register", request.url));
   }
 
-  // Check if accessing dashboard without being logged in
+  // For dashboard routes, we'll check auth on client side
+  // Middleware can't access localStorage, so we skip the check here
   if (pathname.startsWith("/dashboard")) {
-    const authStorage = request.cookies.get("auth-storage");
-    const hasToken = authStorage?.value?.includes('"token"');
-
-    console.log("🔐 Dashboard access:", {
-      hasAuthStorage: !!authStorage,
-      hasToken,
-      pathname,
-    });
-
-    // If no token and trying to access dashboard, redirect to login
-    if (!hasToken) {
-      console.log("❌ No token found, redirecting to /auth/login");
-      return NextResponse.redirect(new URL("/auth/login", request.url));
-    }
+    console.log("📊 Dashboard route accessed:", pathname);
+    console.log("ℹ️ Auth check will be done client-side");
   }
 
   console.log("✅ Request allowed");
