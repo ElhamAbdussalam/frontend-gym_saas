@@ -24,12 +24,21 @@ export default function AttendancePage() {
   };
 
   // Queries
-  const { data: attendanceData, isLoading } = useQuery({
+  const {
+    data: attendanceData,
+    isLoading,
+    error: statsError,
+  } = useQuery({
     queryKey: ["attendance", date],
     queryFn: () => attendanceService.getDailyStats(date),
+    retry: 1,
   });
 
-  const { data: listData, isLoading: listLoading } = useQuery({
+  const {
+    data: listData,
+    isLoading: listLoading,
+    error: listError,
+  } = useQuery({
     queryKey: ["attendance-list", date],
     queryFn: () =>
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/attendance?date=${date}`, {
@@ -37,8 +46,20 @@ export default function AttendancePage() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
           Accept: "application/json",
         },
-      }).then((r) => r.json()),
+      }).then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }),
+    retry: 1,
   });
+
+  // Log errors
+  if (statsError) {
+    console.error("📊 Stats error:", statsError);
+  }
+  if (listError) {
+    console.error("📋 List error:", listError);
+  }
 
   // Search members
   const handleSearchMembers = async () => {
