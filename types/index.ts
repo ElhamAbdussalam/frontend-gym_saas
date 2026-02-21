@@ -212,6 +212,21 @@ export interface ApiResponse<T = any> {
   errors?: Record<string, string[]>;
 }
 
+export interface AuthResponse {
+  message: string;
+  user: User;
+  access_token: string;
+  token_type: string;
+}
+
+export interface ApiError {
+  message: string;
+  errors?: Record<string, string[]>;
+  exception?: string;
+  file?: string;
+  line?: number;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   links: {
