@@ -137,37 +137,99 @@ export const membershipPlanService = {
 // Attendance Services
 export const attendanceService = {
   checkIn: async (memberId: string, notes?: string) => {
-    const response = await api.post("/attendance/check-in", {
-      member_id: memberId,
-      notes,
-    });
-    return response.data;
+    console.log("🚪 Check-in member:", memberId);
+    try {
+      const response = await api.post("/attendance/check-in", {
+        member_id: memberId,
+        notes,
+      });
+      console.log("✅ Check-in successful:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Check-in failed:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      throw error;
+    }
   },
 
   checkInByQr: async (qrCode: string) => {
-    const response = await api.post("/attendance/check-in-qr", {
-      qr_code: qrCode,
-    });
-    return response.data;
+    console.log("📱 Check-in by QR:", qrCode);
+    try {
+      const response = await api.post("/attendance/check-in-qr", {
+        qr_code: qrCode,
+      });
+      console.log("✅ QR check-in successful:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ QR check-in failed:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      throw error;
+    }
   },
 
   checkOut: async (memberId: string) => {
-    const response = await api.post("/attendance/check-out", {
-      member_id: memberId,
-    });
-    return response.data;
+    console.log("🚶 Check-out member:", memberId);
+    try {
+      const response = await api.post("/attendance/check-out", {
+        member_id: memberId,
+      });
+      console.log("✅ Check-out successful:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Check-out failed:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      throw error;
+    }
   },
 
   getDailyStats: async (date?: string) => {
-    const response = await api.get("/attendance/daily-stats", {
-      params: { date },
-    });
-    return response.data;
+    console.log("📊 Fetching daily stats for:", date || "today");
+    try {
+      const response = await api.get("/attendance/daily-stats", {
+        params: { date },
+      });
+      console.log("✅ Daily stats received:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Daily stats fetch failed:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        url: "/attendance/daily-stats",
+        params: { date },
+      });
+      // Return empty stats on error
+      return {
+        total_checkins: 0,
+        still_inside: 0,
+        checked_out: 0,
+      };
+    }
   },
 
   getMemberStats: async (memberId: string) => {
-    const response = await api.get(`/attendance/member/${memberId}/stats`);
-    return response.data;
+    console.log("📈 Fetching member stats:", memberId);
+    try {
+      const response = await api.get(`/attendance/member/${memberId}/stats`);
+      console.log("✅ Member stats received:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Member stats fetch failed:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      throw error;
+    }
   },
 };
 
