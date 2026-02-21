@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { attendanceService, memberService } from "@/lib/services";
 import type { AttendanceRecord, Member } from "@/types";
+import { AttendanceDebugPanel } from "@/components/AttendanceDebugPanel";
 
 export default function AttendancePage() {
   const queryClient = useQueryClient();
@@ -387,6 +388,9 @@ export default function AttendancePage() {
           )}
         </div>
       </div>
+
+      {/* Debug Panel (only in development) */}
+      <AttendanceDebugPanel />
     </div>
   );
 }
