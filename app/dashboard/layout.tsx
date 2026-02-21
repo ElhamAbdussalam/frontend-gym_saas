@@ -34,6 +34,11 @@ export default function DashboardLayout({
     console.log("📊 Auth state:", { hasUser: !!user, hasToken: !!token });
 
     const checkAuth = () => {
+      if (typeof window === "undefined") {
+        console.log("⚠️ Server-side render, skipping auth check");
+        return true;
+      }
+
       const localToken = localStorage.getItem("token");
       console.log("🔑 localStorage token:", localToken ? "exists" : "missing");
 
@@ -63,8 +68,12 @@ export default function DashboardLayout({
     router.push("/auth/login");
   };
 
-  // Show loading or nothing while checking auth
-  if (!token && !localStorage.getItem("token")) {
+  // Show loading or nothing while checking auth (only on client-side)
+  if (
+    typeof window !== "undefined" &&
+    !token &&
+    !localStorage.getItem("token")
+  ) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
