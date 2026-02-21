@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { attendanceService, memberService } from "@/lib/services";
 import type { AttendanceRecord, Member } from "@/types";
-import { AttendanceDebugPanel } from "@/components/AttendanceDebugPanel";
+import { AttendanceDebugPanel } from "@/components/AttendacneDebugPanel";
 
 export default function AttendancePage() {
   const queryClient = useQueryClient();
