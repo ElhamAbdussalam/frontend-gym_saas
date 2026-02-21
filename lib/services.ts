@@ -47,8 +47,20 @@ export const memberService = {
   },
 
   create: async (data: Partial<Member>) => {
-    const response = await api.post("/members", data);
-    return response.data;
+    console.log("👥 Creating member with data:", data);
+    try {
+      const response = await api.post("/members", data);
+      console.log("✅ Member created successfully:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Member creation failed:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        config: error.config,
+      });
+      throw error;
+    }
   },
 
   getById: async (id: string) => {
