@@ -21,7 +21,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           {children}
-          <RouteDebugger />
+          {/* <RouteDebugger /> */}
         </Providers>
       </body>
     </html>
