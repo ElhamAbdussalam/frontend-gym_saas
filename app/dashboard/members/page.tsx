@@ -52,9 +52,25 @@ export default function MembersPage() {
   const createMutation = useMutation({
     mutationFn: memberService.create,
     onSuccess: () => {
+      console.log("✅ Member created, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ["members"] });
       setShowModal(false);
       resetForm();
+    },
+    onError: (error: any) => {
+      console.error("❌ Create member mutation error:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+
+      // Show error to user
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.errors ||
+        "Failed to create member. Please try again.";
+
+      alert(`Error: ${JSON.stringify(errorMessage)}`);
     },
   });
 
@@ -271,6 +287,12 @@ export default function MembersPage() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                console.log("📝 Submitting member form with data:", form);
+                console.log("🔍 Form validation check:", {
+                  hasFirstName: !!form.first_name,
+                  hasLastName: !!form.last_name,
+                  hasPhone: !!form.phone,
+                });
                 createMutation.mutate(form);
               }}
               className="space-y-3"
@@ -309,7 +331,6 @@ export default function MembersPage() {
                 </label>
                 <input
                   className="w-full border rounded-lg px-3 py-2"
-                  type="number"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   required
@@ -372,7 +393,6 @@ export default function MembersPage() {
                   Emergency Contact
                 </label>
                 <input
-                  type="number"
                   className="w-full border rounded-lg px-3 py-2"
                   value={form.emergency_contact}
                   onChange={(e) =>
