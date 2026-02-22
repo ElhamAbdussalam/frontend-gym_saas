@@ -48,17 +48,62 @@ export const memberService = {
 
   create: async (data: Partial<Member>) => {
     console.log("👥 Creating member with data:", data);
+    console.log("🔍 Data validation:", {
+      hasFirstName: !!data.first_name,
+      hasLastName: !!data.last_name,
+      hasPhone: !!data.phone,
+      allFields: Object.keys(data),
+    });
+
     try {
+      console.log("📡 Sending POST request to /members");
       const response = await api.post("/members", data);
       console.log("✅ Member created successfully:", response.data);
       return response.data;
     } catch (error: any) {
-      console.error("❌ Member creation failed:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        config: error.config,
-      });
+      // Comprehensive error logging
+      console.error("❌ Member creation failed!");
+      console.error("Error type:", typeof error);
+      console.error("Error constructor:", error?.constructor?.name);
+      console.error("Error keys:", Object.keys(error || {}));
+
+      console.error("Full error object:", error);
+      console.error("Error message:", error?.message);
+      console.error("Error response:", error?.response);
+      console.error("Error response data:", error?.response?.data);
+      console.error("Error response status:", error?.response?.status);
+      console.error("Error config:", error?.config);
+      console.error("Error request:", error?.request);
+      console.error("Error code:", error?.code);
+      console.error("Error stack:", error?.stack);
+
+      // Check if it's a network error
+      if (error?.message === "Network Error") {
+        console.error("🌐 This is a NETWORK ERROR");
+        console.error("   → Backend might be down");
+        console.error("   → Check: http://localhost:8000");
+        alert("❌ Backend connection failed! Is the backend running?");
+      }
+
+      // Check if it's a timeout
+      if (error?.code === "ECONNABORTED") {
+        console.error("⏱️ Request TIMEOUT");
+        alert("❌ Request timeout. Backend took too long to respond.");
+      }
+
+      // Check if response exists
+      if (!error?.response) {
+        console.error("⚠️ No response from server!");
+        console.error("   Possible causes:");
+        console.error("   1. Backend is not running");
+        console.error("   2. CORS blocking the request");
+        console.error("   3. Network/firewall issue");
+        console.error("   4. Wrong API URL");
+        alert(
+          `❌ Cannot connect to backend!\nAPI URL: ${process.env.NEXT_PUBLIC_API_URL}\nCheck if backend is running.`,
+        );
+      }
+
       throw error;
     }
   },
