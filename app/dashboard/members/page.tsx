@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { memberService, membershipPlanService } from "@/lib/services";
 import type { Member, MembershipPlan } from "@/types";
+import { NetworkDiagnostic } from "@/components/NetworkDiagnostic";
 
 const statusColors: Record<string, string> = {
   active: "bg-green-100 text-green-700",
@@ -58,19 +59,27 @@ export default function MembersPage() {
       resetForm();
     },
     onError: (error: any) => {
-      console.error("❌ Create member mutation error:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
+      console.error("❌ Create member mutation error!");
+      console.error("Error type:", typeof error);
+      console.error("Error is null?", error === null);
+      console.error("Error is undefined?", error === undefined);
+      console.error("Error keys:", error ? Object.keys(error) : "NO KEYS");
+      console.error("Full error:", error);
 
-      // Show error to user
+      // Try to extract ANY error message
       const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.errors ||
-        "Failed to create member. Please try again.";
+        error?.response?.data?.message ||
+        error?.response?.data?.errors ||
+        error?.message ||
+        error?.toString() ||
+        "Unknown error - check console for details";
 
-      alert(`Error: ${JSON.stringify(errorMessage)}`);
+      console.error("Extracted error message:", errorMessage);
+
+      // Show error to user with more context
+      alert(
+        `❌ Failed to create member\n\nError: ${JSON.stringify(errorMessage, null, 2)}\n\nCheck browser console for more details.`,
+      );
     },
   });
 
@@ -525,6 +534,9 @@ export default function MembersPage() {
           </div>
         </div>
       )}
+
+      {/* Network Diagnostic (only in development) */}
+      <NetworkDiagnostic />
     </div>
   );
 }
